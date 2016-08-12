@@ -13,6 +13,14 @@
 	<!-- 消费者,需要根据具体情况在reference上来设置 -->
     <dubbo:consumer version="1.0.0" />
   	<!-- 商品服务 -->
-	<dubbo:reference interface="com.official.foundation.facade.product.ClassifyFacadeService" id="classifyFacadeService" />
+	<dubbo:reference interface="com.official.foundation.facade.product.BrandFacadeService" id="brandService" />
+	
+	<dubbo:reference interface="com.official.foundation.facade.product.ClassifyFacadeService" id="classifyService" />
+	
+	<dubbo:reference interface="com.official.foundation.facade.product.CommodityFacadeService" id="commodityService" />
+	
+	<dubbo:reference interface="com.official.foundation.facade.product.PropertyFacadeService" id="propertyService" />
+	
+	<dubbo:reference interface="com.official.foundation.facade.product.SpecificationFacadeService" id="specificationService" />
 		
 </beans>

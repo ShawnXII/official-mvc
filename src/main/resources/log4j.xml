@@ -25,7 +25,7 @@
 	<!-- 每个文件最大为10MB,支持10个文件 -->
 	<appender name="rollingErrorFile" class="org.apache.log4j.RollingFileAppender">
 		<param name="Append" value="true" />
-		<param name="File" value="${log.error.file}" />
+		<param name="File" value="../logs/official-web.log" />
 		<param name="MaxFileSize" value="10485760" />
 		<param name="MaxBackupIndex" value="10" />
 		<layout class="org.apache.log4j.PatternLayout">
