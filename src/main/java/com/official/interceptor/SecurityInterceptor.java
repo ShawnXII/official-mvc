@@ -5,6 +5,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+
+import com.official.core.entity.LoginUser;
+import com.official.core.util.LoginUtils;
 /**
  * 登录拦截器 
  * @author ShawnXII
@@ -19,6 +22,12 @@ public class SecurityInterceptor implements HandlerInterceptor{
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
+		LoginUser lu=LoginUtils.getCurrentuser(request);
+		if(lu==null){
+			String contextPath=request.getContextPath();
+			response.sendRedirect(contextPath+"/login/login.htm");
+			return false;
+		}
 		return true;
 	}
 	/**
@@ -27,6 +36,10 @@ public class SecurityInterceptor implements HandlerInterceptor{
 	@Override
 	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
 			ModelAndView modelAndView) throws Exception {
+		if(modelAndView!=null){
+			LoginUser lu=LoginUtils.getCurrentuser(request);
+			modelAndView.addObject("loginUser", lu);
+		}
 		
 	}
 	

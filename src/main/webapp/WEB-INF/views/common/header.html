@@ -1,0 +1,27 @@
+<div class="header navbar navbar-inverse navbar-fixed-top">
+	<div class="navbar-inner">
+		<div class="container-fluid">
+			<a class="brand" href="/"><span style="color:red;">欧沃泉</span></a>
+			<a href="javascript:;" class="btn-navbar collapsed" data-toggle="collapse" data-target=".nav-collapse">
+				<img src="${config.resourcePath!}/image/menu-toggler.png" alt="" />
+			</a>
+			
+			<!-- BEGIN TOP NAVIGATION MENU -->  
+			<ul class="nav pull-right">
+				<li class="dropdown user">
+					<a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">
+						<img alt="${loginUser.nickName!}" src="${config.imagePath!}${loginUser.image!}" width ="29" height ="29"/>
+						<span class="username">${loginUser.nickName!}</span>
+						<i class="icon-angle-down"></i>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a href="extra_profile.html"><i class="icon-user"></i> 我的信息</a></li>
+						<li class="divider"></li>
+						<li><a href="javascript:;" data-action="loginLock"><i class="icon-lock"></i> 帐号锁定</a></li>
+						<li><a href="javascript:;" data-action="loginOut"><i class="icon-key"></i> 退出登录</a></li>
+					</ul>
+				</li>
+			</ul>    
+		</div>
+	</div>
+</div>

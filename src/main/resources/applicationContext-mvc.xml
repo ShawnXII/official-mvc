@@ -145,10 +145,18 @@
 		<!-- 多GroupTemplate，需要指定使用的bean -->
 		<property name="config" ref="beetlConfig" />
 	</bean>
-	
+
 	<mvc:interceptors>
-		<bean class="com.official.interceptor.ResourceInterceptor"/>  
+		<bean class="com.official.interceptor.ResourceInterceptor" />
+		<mvc:interceptor>
+			<mvc:mapping path="/admin/**/*.htm" />
+			<bean class="com.official.interceptor.SecurityInterceptor" />
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<mvc:mapping path="/login/**/*.htm" />
+			<bean class="com.official.interceptor.UnknownInterceptor" />
+		</mvc:interceptor>
 	</mvc:interceptors>
-	
+
 	<import resource="dubbo.xml" />
 </beans>

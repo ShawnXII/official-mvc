@@ -22,5 +22,7 @@
 	<dubbo:reference interface="com.official.foundation.facade.product.PropertyFacadeService" id="propertyService" />
 	
 	<dubbo:reference interface="com.official.foundation.facade.product.SpecificationFacadeService" id="specificationService" />
+	
+	<dubbo:reference interface="com.official.foundation.facade.user.AccountFacadeService" id="accountService" />
 		
 </beans>
