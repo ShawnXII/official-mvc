@@ -385,6 +385,7 @@ Header and header elements.
 
 .header .nav > li.dropdown.user .dropdown-toggle {
   padding: 6px 4px 7px 9px;
+ 
 }
 
 .header .nav > li.dropdown.user .dropdown-toggle:hover {
@@ -393,6 +394,9 @@ Header and header elements.
 
 .header .nav > li.dropdown.user .dropdown-toggle .username {
   color: #ddd;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .header .nav li.dropdown.user .dropdown-toggle i {

@@ -1,13 +1,13 @@
 package com.official.web.controller;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -15,13 +15,16 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.google.common.collect.Maps;
+import com.official.core.base.search.support.SearchOperator;
+import com.official.core.base.search.support.Searchable;
 import com.official.core.entity.LoginUser;
 import com.official.core.util.Commutil;
 import com.official.core.util.LoginUtils;
 import com.official.foundation.domain.po.product.Classify;
+import com.official.foundation.domain.po.product.Specification;
 import com.official.foundation.facade.product.ClassifyFacadeService;
 import com.official.foundation.facade.product.CommodityFacadeService;
+import com.official.foundation.facade.product.SpecificationFacadeService;
 
 @Controller
 @RequestMapping("/admin/product")
@@ -32,14 +35,55 @@ public class ProductViewController extends BaseController {
 
 	@Autowired
 	private ClassifyFacadeService classifyService;
-
+	
+	@Autowired
+	private SpecificationFacadeService specificationService;
+	/**
+	 * 保存规格
+	 * @param request
+	 */
+	@RequestMapping(value="/saveSpec.htm", method = { RequestMethod.POST })
+	public void saveSpec(HttpServletRequest request){
+		String type=request.getParameter("type");
+		if(!type.equals("function")){
+			type="spec";
+		}
+		LoginUser lu = LoginUtils.getCurrentuser(request);
+		String titles=request.getParameter("title");
+		String[] arr=titles.split(",");
+		for(String title:arr){
+			String firstWord=Commutil.TransformationPy(title, Commutil.PINYIN_TRANSFORMATION_FIRST_CAPITAL);
+			Specification spec=new Specification();
+			spec.setType(type);
+			spec.setTitle(title);
+			spec.setFirstWord(firstWord);
+			spec.setStoreId(lu.getId());
+			spec.setCreateTime(new Date());
+			spec.setCreateBy(lu.getUsername());
+			spec.setDeleteStatus(false);
+			boolean flag=this.specificationService.checkTitle(title);
+			if(!flag){
+				this.specificationService.save(spec);
+			}
+		}	
+	}
+	@RequestMapping(value="/specList.htm", method = { RequestMethod.GET })
+	@ResponseBody
+	public List<Specification> getSpec(HttpServletRequest request){
+		LoginUser lu = LoginUtils.getCurrentuser(request);
+		Specification spec=new Specification();
+		spec.setStoreId(lu.getId());
+		return this.specificationService.searchSpec(spec);		
+	}
+	
 	@RequestMapping("/commodity.htm")
 	public ModelAndView commodityView(HttpServletRequest request) {
+	
 		ModelAndView view = new ModelAndView();
 		view.setViewName("/product/commodity");
 		view.addObject("title", "产品列表");
 		String msg = request.getParameter("msg");
-		view.addObject("msg", msg);
+		view.addObject("msg", msg);		
 		return view;
 	}
 
@@ -56,9 +100,14 @@ public class ProductViewController extends BaseController {
 
 	@RequestMapping(value = "/addCommodit.htm")
 	public ModelAndView addCommodit(HttpServletRequest request) {
+		LoginUser lu = LoginUtils.getCurrentuser(request);
 		ModelAndView view = new ModelAndView();
 		view.setViewName("/product/addCommodity");
 		view.addObject("title", "添加产品");
+		Classify classify = new Classify();
+		classify.setCreateBy(lu.getUsername());
+		List<Classify> data = this.classifyService.searchClassify(classify);
+		view.addObject("classifyList", data);
 		return view;
 	}
 
@@ -70,46 +119,25 @@ public class ProductViewController extends BaseController {
 	 */
 	@RequestMapping("/classify.htm")
 	public ModelAndView classifyView(HttpServletRequest request) {
+		LoginUser lu = LoginUtils.getCurrentuser(request);
 		ModelAndView view = new ModelAndView();
 		view.setViewName("/product/classifyList");
 		String msg = request.getParameter("msg");
 		view.addObject("msg", msg);
 		view.addObject("title", "分类列表");
-		Integer pageIndex = Commutil.null2Int(request.getParameter("pageIndex"), 0);
-		Integer pageSize = Commutil.null2Int(request.getParameter("pageSize"), 200);
 		String title = Commutil.null2String(request.getParameter("title"));
 		Classify classify = new Classify();
+		classify.setCreateBy(lu.getUsername());
 		if (StringUtils.isNotBlank(title)) {
 			classify.setTitle(title);
 		}
-		Map<String, Object> data = this.classifyService.searchClassify(classify, pageIndex, pageSize);
+		List<Classify> data = this.classifyService.searchClassify(classify);
 		view.addObject("data", data);
 		return view;
 	}
 
 	/**
-	 * 获取分类数据
-	 * 
-	 * @param request
-	 * @return
-	 */
-	@RequestMapping(value = "/classifyData.htm", method = { RequestMethod.POST, RequestMethod.GET })
-	@ResponseBody
-	public Map<String, Object> classifyData(HttpServletRequest request) {
-		Integer pageIndex = Commutil.null2Int(request.getParameter("pageIndex"), 0);
-		Integer pageSize = Commutil.null2Int(request.getParameter("pageSize"), 20);
-		String title = Commutil.null2String(request.getParameter("title"));
-		Classify classify = new Classify();
-		if (StringUtils.isNotBlank(title)) {
-			classify.setTitle(title);
-		}
-		Map<String, Object> data = this.classifyService.searchClassify(classify, pageIndex, pageSize);
-		return data;
-	}
-
-	/**
 	 * 添加分类页面
-	 * 
 	 * @param request
 	 * @return
 	 */
@@ -121,7 +149,7 @@ public class ProductViewController extends BaseController {
 		return view;
 	}
 	/**
-	 * 修改产品
+	 * 修改分类
 	 * @param request
 	 * @return
 	 */
@@ -140,7 +168,7 @@ public class ProductViewController extends BaseController {
 		return view;
 	}
 	/**
-	 * 删除产品
+	 * 删除分类
 	 * @param request
 	 * @param attr
 	 * @return
@@ -158,7 +186,12 @@ public class ProductViewController extends BaseController {
 		}
 		return "redirect:/admin/product/classify.htm";
 	}
-	
+	/**
+	 * 添加分类
+	 * @param request
+	 * @param attr
+	 * @return
+	 */
 	@RequestMapping(value = "/addClassify.htm", method = { RequestMethod.POST })
 	public String addClassify(HttpServletRequest request, RedirectAttributes attr) {
 		LoginUser lu = LoginUtils.getCurrentuser(request);

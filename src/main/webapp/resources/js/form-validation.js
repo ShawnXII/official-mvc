@@ -17,7 +17,7 @@ var FormValidation = function () {
                 ignore: "",
                 rules: {
                     title: {
-                    	rangelength:[5,20],
+                    	rangelength:[2,20],
                         required: true
                     },
                     weight: {

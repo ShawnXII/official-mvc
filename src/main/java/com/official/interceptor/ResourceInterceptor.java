@@ -1,5 +1,6 @@
 package com.official.interceptor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.WebRequestInterceptor;
@@ -25,14 +26,21 @@ public class ResourceInterceptor implements WebRequestInterceptor {
 	@Override
 	public void postHandle(WebRequest request, ModelMap model) throws Exception {
 		if(model!=null&&!Commutil.null2Boolean(model.get("resourcesFlag"))){
+			String contextPath=request.getContextPath();
+			String resourcePath="/resources";
+			String imagePath="/resources/image";
+			if(StringUtils.isNotBlank(contextPath)){
+				resourcePath=contextPath+resourcePath;
+				imagePath=contextPath+imagePath;
+			}
 			//加载系统资源 
 			Config config=new Config();
 			config.setAuthor("ShawnXII");
 			config.setKeyWords("");
 			config.setCorporateName("欧沃泉");
-			config.setImagePath("http://127.0.0.1/resources");
-			config.setResourcePath("/resources");
-			config.setContextPath("/resources");
+			config.setImagePath(imagePath);
+			config.setResourcePath(resourcePath);
+			config.setContextPath(contextPath);
 			model.addAttribute("config", config);
 		}
 	}

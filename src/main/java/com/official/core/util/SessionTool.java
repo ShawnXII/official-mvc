@@ -73,7 +73,12 @@ public class SessionTool {
 	 * @return
 	 */
 	public Object get(String key){
-		return session.getAttribute(key);
+		try{
+			return session.getAttribute(key);
+		}catch(Exception e){
+			
+		}
+		return "";
 	}
 	/**
 	 * 插入Session
