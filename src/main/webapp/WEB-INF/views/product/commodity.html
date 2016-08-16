@@ -1,8 +1,20 @@
+<!DOCTYPE html>
+<!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->
+<!--[if IE 9]> <html lang="en" class="ie9"> <![endif]-->
+<!--[if !IE]><!--> <html lang="en"> <!--<![endif]-->
+<!-- BEGIN HEAD -->
+<head>
+	<meta charset="utf-8" />
+	<title>${title!}</title>
+	<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+	<meta content="${config.description!}" name="description" />
+	<meta content="${config.author!}" name="author" />
+	<meta content="${config.keyWords!}" name="keyWords" />
 	<!-- BEGIN GLOBAL MANDATORY STYLES -->
 	<link href="${config.resourcePath!}/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
 	<link href="${config.resourcePath!}/css/bootstrap-responsive.min.css" rel="stylesheet" type="text/css"/>
-	<link href="${config.resourcePath!}/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
 	<link href="${config.resourcePath!}/css/style-metro.css" rel="stylesheet" type="text/css"/>
+	<link href="${config.resourcePath!}/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
 	<link href="${config.resourcePath!}/css/style.css" rel="stylesheet" type="text/css"/>
 	<link href="${config.resourcePath!}/css/style-responsive.css" rel="stylesheet" type="text/css"/>
 	<link href="${config.resourcePath!}/css/default.css" rel="stylesheet" type="text/css" id="style_color"/>
@@ -12,7 +24,10 @@
 	<link href="${config.resourcePath!}/css/bootstrap-fileupload.css" rel="stylesheet" type="text/css" />
 	<link href="${config.resourcePath!}/css/chosen.css" rel="stylesheet" type="text/css" />
 	<link href="${config.resourcePath!}/css/profile.css" rel="stylesheet" type="text/css" />
+	<link rel="stylesheet" type="text/css" href="${config.resourcePath!}/css/select2_metro.css" />
+	<link rel="stylesheet" href="${config.resourcePath!}/css/DT_bootstrap.css" />
 	<!-- END PAGE LEVEL STYLES -->
+	<link rel="shortcut icon" href="${config.resourcePath!}/image/favicon.ico" />
 </head>
 <body class="page-header-fixed">
 	<!--:include("/WEB-INF/views/common/header.html"){}-->
@@ -43,7 +58,7 @@
 					<div class="span12">
 						<div class="portlet box blue">
 							<div class="portlet-title">
-								<div class="caption"><i class="icon-edit"></i>${subTitle!}</div>
+								<div class="caption"><i class="icon-edit"></i>${title!}</div>
 								<div class="tools">
 									<a href="javascript:;" class="reload"></a>
 								</div>
@@ -51,50 +66,52 @@
 							<div class="portlet-body">
 								<div class="clearfix">
 									<div class="btn-group">
-										<a href="addCommodit.htm" class="btn green" >
+										<a href="addCommoditView.htm" class="btn green" >
 											添加 <i class="icon-plus"></i>
 										</a>
 									</div>
 								</div>
-								<table class="table table-striped table-hover table-bordered" id="tableData">
-									<thead>
-										<tr>
-											<th>产品名称</th>
-											<th>副标题</th>
-											<th>推荐价格</th>
-											<th>分类</th>
-											<th>创建时间</th>
-											<th>当前状态</th>
-											<th>操作</th>
-										</tr>
-									</thead>
-									<tbody>
-										<!--:if(!isEmpty(productList)){
-											for(product in productList){-->
-												<tr> 
-													<td>${product.productName}</td>
-													<td>${product.subhead}</td>
-													<td>&yen;${product.price}</td>
-													<td>
-														<!--:if(!isEmpty(product.classify)){-->
-															${product.classify.title}
-														<!--:}  -->
-													</td>
-													<td>
-														${product.createTime}
-													</td>
-													<td>
-														${product.status}
-													</td>
-													<td>
-														<a href="javascript:void(0);" onclick="operation('${product.id!}','edit');" class="btn mini purple"><i class="icon-edit"></i> 修改</a>
-														<a href="javascript:void(0);" onclick="operation('${product.id!}','delete');" class="btn mini black"><i class="icon-trash"></i> 删除</a>	
-													</td>
-												</tr>	
-											<!--:}
-										}  -->
-									</tbody>
-								</table>
+								<div id="tableData_wrapper" class="dataTables_wrapper" role="grid">
+									<div class="row-fluid">
+										<div class="span6">
+											<div id="tableData_length" class="dataTables_length">
+												<label>每页 
+												<select size="1" name="tableData_length" aria-controls="tableData" id="page_table_data">
+													<option value="10" selected="selected">10</option>
+												</select> 
+												条</label>
+											</div>
+										</div>
+									</div>
+									<table class="table table-striped table-hover table-bordered" id="tableData">
+										<thead>
+											<tr>
+												<th>产品名称</th>
+												<th>副标题</th>
+												<th>推荐价格</th>
+												<th>分类</th>
+												<th>创建时间</th>
+												<th>当前状态</th>
+												<th>操作</th>
+											</tr>
+										</thead>
+										<tbody>
+											
+										</tbody>
+									</table>
+									<div class="row-fluid">
+										<div class="span6">
+											<div class="dataTables_info" id="tableData_info"><!-- 从1 到 4 条记录-总记录数为 4 条 --></div>
+										</div>
+										<div class="span6">
+											<div class="dataTables_paginate fg-buttonset ui-buttonset fg-buttonset-multi ui-buttonset-multi paging_bootstrap pagination" >
+												<ul id="tableData_page_ul">
+													
+												</ul>
+											</div>
+										</div>											
+									</div>
+								</div>	
 							</div>
 						</div>
 					</div>
@@ -110,6 +127,22 @@
 			<span class="go-top">
 			<i class="icon-angle-up"></i>
 			</span>
+		</div>
+	</div>
+	<form action="" id="dataForm" method="POST">
+		<input value="" type="hidden" id="id" name="id"/>
+	</form>
+	<a id="popUpWindow" class=" btn yellow" data-toggle="modal" href="#static" style="display:none;">View Demo</a>
+	<div id="static" class="modal hide fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+			<h3 id="system-config-label">操作提示</h3>
+		</div>
+		<div class="modal-body">
+			<p>${msg!''}</p>
+		</div>
+		<div class="modal-footer">
+			<button type="button" data-dismiss="modal" class="btn">确定</button>
 		</div>
 	</div>
 	<!-- BEGIN CORE PLUGINS -->
@@ -135,11 +168,123 @@
 		jQuery(document).ready(function() {       
 		   // initiate layout and plugins
 		   App.init();
+		   initData();
+		   var msg='${msg!}';
+		   if(msg.length>0){
+			   $('#popUpWindow').click();
+		   }
 		});
-		function operation(id,type){
-			if(type=='add'){
-				
-			}
+		
+		function initData(){
+			var table=$('#tableData');
+			var tbody=$('#tableData tbody');
+			var row=table.find('thead tr th').length;
+			var dt={};
+			dt.pageSize=$('select#page_table_data option[selected="selected"]').val();
+			dt.pageIndex=typeof($('div').data('pageIndex'))=='undefined'?0:$('div').data('pageIndex');
+			console.log(dt);
+			$.ajax({
+				url:'commodityData.htm',
+				type:'GET',
+				data:dt,
+				async:true,
+				dataType:'json',
+				beforeSend:function(){
+					tbody.html('<tr data-type="load"><td colspan="'+row+'" style="text-decoration: none;text-align:center">正在加载中...</td></tr>');
+				},
+				success:function(data){
+					console.log(data);
+					tbody.find('tr[data-type]').remove();
+					var content=data.content;
+					var size=data.size;
+					var totalElements=data.totalElements;
+					var totalPages=data.totalPages;
+					var number=data.number;
+					var numberOfElements=data.numberOfElements;
+					if(totalElements==0){
+						tbody.html('<tr data-type="msg"><td colspan="'+row+'" style="text-decoration: none;text-align:center">没有数据</td></tr>');
+					}else{
+						var html='';
+						$.each(content,function(i,v){
+							var createTime=v.createTime;
+							var title=v.title;
+							var subTitle=v.subTitle;
+							var price=v.price;
+							var classify=v.classify;
+							var state=v.state;
+							html=html+'<tr>';
+							html=html+'<td>'+title+'</td>';
+							html=html+'<td>'+subTitle+'</td>';
+							html=html+'<td>&yen;'+price+'</td>';
+							html=html+'<td>'+classify.title+'</td>';
+							html=html+'<td>'+createTime+'</td>';
+							html=html+'<td>'+state+'</td>';
+							html=html+'<td><a href="javascript:;" class="btn mini blue" onclick="show(\''+v.id+'\')"><i class="icon-search"></i>查看</a>&nbsp;';
+							html=html+'<a href="javascript:;" class="btn mini purple" onclick="edit(\''+v.id+'\')"><i class="icon-edit"></i>修改</a>&nbsp;';
+							html=html+'<a href="javascript:;" class="btn mini black" onclick="deleteCommodity(\''+v.id+'\')"><i class="icon-trash"></i>删除</a>';
+							html=html+'</td>';
+							html=html+'</tr>';
+						});
+						
+						tbody.html(html);
+						$('#tableData_info').html('从'+parseInt((number*size))+'到 '+parseInt((number*size)+numberOfElements)+'条记录-总记录数为 '+totalElements+'条');
+						var ul=$('#tableData_page_ul').empty();
+						var prevLi=$('<li></li>').appendTo(ul);
+						prevLi.addClass('prev');
+						var prevA=$('<a href="javascript:;">← <span class="hidden-480">上一页</span></a>').appendTo(prevLi);
+						if(parseInt(number)==0){
+							prevLi.addClass('disabled');
+						}else{
+							prevA.bind('click',function(){
+								skip(number-1);
+							});
+						}
+						
+						for(var j=1;j<=totalPages;j++){
+							var li=$('<li></li>').appendTo(ul);
+							var a=$('<a href="javascript:;" onclick="skip('+(j-1)+')">'+j+'</a>').appendTo(li);
+							var i1=j;
+							if(j==(number+1)){
+								li.addClass('active');
+								a.removeAttr('onclick');
+							}
+						}
+						var nextLi=$('<li></li>').appendTo(ul);
+						nextLi.addClass('next');
+						var nextA=$('<a href="javascript:;"><span class="hidden-480">下一页</span> → </a>').appendTo(nextLi);
+						if((number+1)>=totalPages){
+							nextLi.addClass('disabled');
+						}else{
+							nextA.bind('click',function(){
+								skip(number+1);
+							});
+						}
+					}					
+				}
+			});
+		}
+		
+		function skip(page){
+			$('div').data('pageIndex',page);
+			initData();
+		}
+		
+		function edit(id){
+			$('#dataForm #id').val(id);
+			$('#dataForm').attr('action','editCommodity.htm');
+			$('#dataForm').submit();
+		}
+		
+		function deleteCommodity(id){
+			$('#dataForm #id').val(id);
+			$('#dataForm').attr('action','deleteCommodity.htm');
+			$('#dataForm').submit();
+		}
+		
+		function show(id){
+			$('#dataForm #id').val(id);
+			$('#dataForm').attr('action','showCommodity.htm');
+			$('#dataForm').submit();
 		}
 	</script>
 </body>

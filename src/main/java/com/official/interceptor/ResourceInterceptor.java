@@ -28,10 +28,9 @@ public class ResourceInterceptor implements WebRequestInterceptor {
 		if(model!=null&&!Commutil.null2Boolean(model.get("resourcesFlag"))){
 			String contextPath=request.getContextPath();
 			String resourcePath="/resources";
-			String imagePath="/resources/image";
+			String imagePath="http://127.0.0.1:8088/resources";
 			if(StringUtils.isNotBlank(contextPath)){
 				resourcePath=contextPath+resourcePath;
-				imagePath=contextPath+imagePath;
 			}
 			//加载系统资源 
 			Config config=new Config();

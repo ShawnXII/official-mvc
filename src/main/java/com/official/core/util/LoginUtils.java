@@ -27,7 +27,7 @@ public class LoginUtils {
 		Assert.notNull(account);
 		LoginUser lu = new LoginUser(account);
 		String json = JSON.toJSONString(lu);
-		SessionTool st = SessionTool.getInstance(request);
+		SessionTool st = SessionTool.getInstance(request);		
 		st.set(LOGIN_KEY, json);
 	}
 	/**

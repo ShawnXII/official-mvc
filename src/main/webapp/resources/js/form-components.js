@@ -78,8 +78,10 @@ var FormComponents = function () {
         if (!jQuery().tagsInput) {
             return;
         }
-        $('#tags_1').tagsInput({
-            width: 'auto',
+        $('#keywords').tagsInput({
+            width: '74%',
+            defaultText:'SEO关键字',
+            maxCount:10,
             'onAddTag': function () {
                 //alert(1);
             },

@@ -34,13 +34,13 @@ public class SessionTool {
 	 * @return
 	 */
 	public static SessionTool getInstance(HttpServletRequest request){
-		if(st==null){
+		if(st==null||st.getSession()==null){
 			synchronized(SessionTool.class){
 				if(st==null){
 					st=new SessionTool(request);
 				}
 			}
-		}
+		}	
 		return st;
 	}
 	/**
