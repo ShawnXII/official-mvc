@@ -25,7 +25,7 @@ public class SecurityInterceptor implements HandlerInterceptor{
 		LoginUser lu=LoginUtils.getCurrentuser(request);
 		if(lu==null){
 			String contextPath=request.getContextPath();
-			response.sendRedirect(contextPath+"/login/login.htm");
+			response.sendRedirect("/login/login.htm");
 			return false;
 		}
 		return true;

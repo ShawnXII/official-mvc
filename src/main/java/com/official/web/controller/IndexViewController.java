@@ -24,7 +24,14 @@ import com.official.foundation.facade.user.AccountFacadeService;
 public class IndexViewController extends BaseController {
 	@Autowired
 	private AccountFacadeService accountService;
-
+	
+	@RequestMapping(value = { "/demo.htm" }, method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView Demo(HttpServletRequest request){
+		ModelAndView view = new ModelAndView();
+		view.setViewName("/image/demo");
+		view.addObject("title", "测试图片");		
+		return view;
+	}
 	/**
 	 * 个人信息主页
 	 * 

@@ -1,12 +1,8 @@
 package com.official.web.controller;
 
-import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -21,11 +17,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.alibaba.fastjson.JSON;
 import com.official.core.entity.LoginUser;
+import com.official.core.util.Binding;
 import com.official.core.util.Commutil;
+import com.official.core.util.GainCallback;
 import com.official.core.util.LoginUtils;
-import com.official.core.util.UpLoadFile;
 import com.official.foundation.domain.po.product.Classify;
 import com.official.foundation.domain.po.product.Commodity;
 import com.official.foundation.domain.po.product.Specification;
@@ -45,7 +41,10 @@ public class ProductViewController extends BaseController {
 
 	@Autowired
 	private SpecificationFacadeService specificationService;
-
+	
+	
+	
+	
 	/**
 	 * 保存规格
 	 * 
@@ -125,7 +124,11 @@ public class ProductViewController extends BaseController {
 		}
 		return this.commodityService.searchCommodity(commodity, pageIndex, pageSize);
 	}
-	
+	/**
+	 * 添加产品
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(value = "/editCommodity.htm", method = { RequestMethod.POST,RequestMethod.GET})
 	public ModelAndView editCommodity(HttpServletRequest request) {
 		LoginUser lu = LoginUtils.getCurrentuser(request);
@@ -187,88 +190,16 @@ public class ProductViewController extends BaseController {
 	@RequestMapping(value = "/addCommodit.htm", method = { RequestMethod.POST })
 	public String addCommodit(HttpServletRequest request, RedirectAttributes attr,
 			@RequestParam("file") MultipartFile multipartFile) {
-		try {
-			LoginUser lu = LoginUtils.getCurrentuser(request);
-			// 商品主图
-			String path = "";
-			Long id = Commutil.null2Long(request.getParameter("id"), -1);
-			Commodity commodity = new Commodity();
-			boolean isNew = true;
-			if (id != null && id > 0) {
-				Commodity entity = this.commodityService.findOne(id);
-				if (entity != null) {
-					commodity = entity;
-					commodity.setUpdateBy(lu.getUsername());
-					commodity.setUpdateTime(new Date());
-					isNew = false;
-				}
-			}
-			if (isNew) {
-				commodity.setCreateBy(lu.getUsername());
-				commodity.setCreateTime(new Date());
-				path =UpLoadFile.upload(multipartFile, request);
-			}
-			String title = request.getParameter("title");
-			String subTitle = request.getParameter("subTitle");
-			String model = request.getParameter("model");
-			String item = request.getParameter("item");
-			String priceStr = request.getParameter("price");
-			BigDecimal price = new BigDecimal(priceStr);
-			String discountStr = request.getParameter("discount");
-			BigDecimal discount = new BigDecimal(discountStr);
-			Long classifyId = Commutil.null2Long(request.getParameter("classifyId"));
-			String functionParamete = request.getParameter("functionParamete");
-			String specificationParameter = request.getParameter("specificationParameter");
-			String candicine = request.getParameter("candicine");
-			String keywords = request.getParameter("keywords");
-			String description = request.getParameter("description");
-			commodity.setTitle(title);
-			commodity.setSubTitle(subTitle);
-			commodity.setModel(model);
-			commodity.setItem(item);
-			commodity.setPrice(price);
-			commodity.setDiscount(discount);
-			Classify classify=new Classify();
-			classify.setId(classifyId);
-			commodity.setClassify(classify);
-			commodity.setFunctionParamete(functionParamete);
-			commodity.setSpecificationParameter(specificationParameter);
-			commodity.setCandicine(candicine);
-			commodity.setKeywords(keywords);
-			commodity.setDescription(description);
-			commodity.setMainPicture(path);
-			commodity.setBrandId(-1L);
-			this.commodityService.save(commodity);
-			attr.addFlashAttribute("msg", "添加成功");
-			StringBuilder sb=new StringBuilder();
-			try{
-				if(StringUtils.isNotBlank(specificationParameter)){
-					@SuppressWarnings("unchecked")
-					Map<Object,Object> specMap=JSON.parseObject(specificationParameter, Map.class);
-					Set<Entry<Object,Object>> set=specMap.entrySet();
-					Iterator<Entry<Object,Object>> ite=set.iterator();
-					while(ite.hasNext()){
-						Entry<Object,Object> entry=ite.next();
-						sb.append(",").append(entry.getKey());
-					}
-				}
-				if(StringUtils.isNotBlank(functionParamete)){
-					@SuppressWarnings("unchecked")
-					Map<Object,Object> specMap=JSON.parseObject(functionParamete, Map.class);
-					Set<Entry<Object,Object>> set=specMap.entrySet();
-					Iterator<Entry<Object,Object>> ite=set.iterator();
-					while(ite.hasNext()){
-						Entry<Object,Object> entry=ite.next();
-						sb.append(",").append(entry.getKey());
-					}
-				}
-				this.saveSpec(request, sb.toString());
-			}catch(Exception e){
-				e.printStackTrace();
-			}
-		} catch (Exception e) {
-			attr.addFlashAttribute("msg", "添加失败!"+e.getMessage());
-		}
+		final CommodityFacadeService service=this.commodityService;
+		Commodity commodity=Binding.analysis(request, Commodity.class, new GainCallback<Commodity>(){
+			@Override
+			public Commodity findOne(Long id) {	
+				return service.findOne(id);
+			}		
+		});
+		service.save(commodity);
+		System.out.println(commodity);
+		
 		return "redirect:/admin/product/commodity.htm";
 	}
 

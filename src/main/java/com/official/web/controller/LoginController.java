@@ -43,7 +43,7 @@ public class LoginController extends BaseController {
 		view.addObject("errorMsg", errorMsg);
 		return view;
 	}
-
+	
 	/**
 	 * 登陆
 	 * 
