@@ -90,6 +90,7 @@ public class Upload implements java.io.Serializable{
 		super();
 		this.id=Commutil.generateId();
 		this.address= Commutil.null2String(PropertiesUtil.get("image.uploadPath"));
+		this.userId=11L;
 	}
 	/**
 	 * 

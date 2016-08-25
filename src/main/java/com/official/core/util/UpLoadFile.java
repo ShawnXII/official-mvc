@@ -58,8 +58,30 @@ public class UpLoadFile {
 		} else {
 			path = upload.getAddress() + "/" + upload.getUserId() + "/" + date;
 		}
-		File fileDir = new File(path + "/" + newFileName);
+		File fileDir = new File(path);
+		if (!fileDir.exists()) {
+			fileDir.mkdirs();
+		}
+		if(upload.getIsRetain()){
+			FileOutputStream out=null;	
+			try {
+				out = new FileOutputStream(path + "/" + newFileName);
+				out.write(upload.getBytes());
+				out.flush();
+				out.close();
+			} catch (IOException e) {
 
+			}finally{
+				if(out!=null){
+					try {
+						out.close();
+					} catch (IOException e) {
+			
+					}
+				}
+			}
+			
+		}
 		// 切割图片
 		boolean cutting = upload.getIsCutting();
 		if (cutting) {

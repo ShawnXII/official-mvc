@@ -158,5 +158,23 @@
 		</mvc:interceptor>
 	</mvc:interceptors>
 
+	<!-- redis -->
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		
+	</bean>
+	<bean id="connectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+		p:host-name="${redis.host}" p:port="${redis.port}" p:password="${redis.pass}"
+		p:pool-config-ref="poolConfig" />
+
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.StringRedisTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+	</bean>
+	
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="staticMethod"
+                  value="com.official.core.util.LoginUtils.setRedisTemplate"/>
+        <property name="arguments" ref="redisTemplate"/>
+	</bean>
 	<import resource="dubbo.xml" />
 </beans>

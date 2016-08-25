@@ -1,240 +1,327 @@
-$(function () {
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as anonymous module.
+    define(['jquery'], factory);
+  } else if (typeof exports === 'object') {
+    // Node / CommonJS
+    factory(require('jquery'));
+  } else {
+    // Browser globals.
+    factory(jQuery);
+  }
+})(function ($) {
 
   'use strict';
 
   var console = window.console || { log: function () {} };
-  var $image = $('#image');
-  var $download = $('#download');
-  var $dataX = $('#dataX');
-  var $dataY = $('#dataY');
-  var $dataHeight = $('#dataHeight');
-  var $dataWidth = $('#dataWidth');
-  var $dataRotate = $('#dataRotate');
-  var $dataScaleX = $('#dataScaleX');
-  var $dataScaleY = $('#dataScaleY');
-  var options = {
-        aspectRatio: 16 / 9,
-        preview: '.img-preview',
-        crop: function (e) {
-          $dataX.val(Math.round(e.x));
-          $dataY.val(Math.round(e.y));
-          $dataHeight.val(Math.round(e.height));
-          $dataWidth.val(Math.round(e.width));
-          $dataRotate.val(e.rotate);
-          $dataScaleX.val(e.scaleX);
-          $dataScaleY.val(e.scaleY);
-        }
-      };
+  
+  function CropAvatar($element) {
+    this.$container = $element;
+    
+    this.$avatarView = this.$container.find('.avatar-view');
+    this.$avatar = this.$avatarView.find('img');
+    this.$avatarModal = this.$container.find('#avatar-modal');
+    this.$loading = this.$container.find('.loading');
 
+    this.$avatarForm = this.$avatarModal.find('.avatar-form');
+    this.$avatarUpload = this.$avatarForm.find('.avatar-upload');
+    this.$avatarSrc = this.$avatarForm.find('.avatar-src');
+    this.$avatarData = this.$avatarForm.find('.avatar-data');
+    this.$avatarInput = this.$avatarForm.find('.avatar-input');
+    this.$avatarSave = this.$avatarForm.find('.avatar-save');
+    this.$avatarBtns = this.$avatarForm.find('.avatar-btns');
 
-  // Tooltip
-  $('[data-toggle="tooltip"]').tooltip();
-
-
-  // Cropper
- $image.on({
-    'build.cropper': function (e) {
-     /* console.log(e.type);*/
-    },
-    'built.cropper': function (e) {
-      /*console.log(e.type);*/
-    },
-    'cropstart.cropper': function (e) {
-     /* console.log(e.type, e.action);*/
-    },
-    'cropmove.cropper': function (e) {
-     /* console.log(e.type, e.action);*/
-    },
-    'cropend.cropper': function (e) {
-      /*console.log(e.type, e.action);*/
-    },
-    'crop.cropper': function (e) {
-    /*  console.log(e.type, e.x, e.y, e.width, e.height, e.rotate, e.scaleX, e.scaleY);*/
-    },
-    'zoom.cropper': function (e) {
-     /* console.log(e.type, e.ratio);*/
-    }
-  }).cropper(options);
-
-
-  // Buttons
-  if (!$.isFunction(document.createElement('canvas').getContext)) {
-    $('button[data-method="getCroppedCanvas"]').prop('disabled', true);
+    this.$avatarWrapper = this.$avatarModal.find('.avatar-wrapper');
+    this.$avatarPreview = this.$avatarModal.find('.avatar-preview');
+    
+    this.init();
   }
 
-  if (typeof document.createElement('cropper').style.transition === 'undefined') {
-    $('button[data-method="rotate"]').prop('disabled', true);
-    $('button[data-method="scale"]').prop('disabled', true);
-  }
+  CropAvatar.prototype = {
+    constructor: CropAvatar,
 
+    support: {
+      fileList: !!$('<input type="file">').prop('files'),
+      blobURLs: !!window.URL && URL.createObjectURL,
+      formData: !!window.FormData
+    },
 
-  // Download
- /* if (typeof $download[0].download === 'undefined') {
-    $download.addClass('disabled');
-  }*/
+    init: function () {
+      this.support.datauri = this.support.fileList && this.support.blobURLs;
 
+      if (!this.support.formData) {
+        this.initIframe();
+      }
 
-  // Options
-  $('.docs-toggles').on('change', 'input', function () {
-    var $this = $(this);
-    var name = $this.attr('name');
-    var type = $this.prop('type');
-    var cropBoxData;
-    var canvasData;
+      this.initTooltip();
+      this.initModal();
+      this.addListener();
+    },
 
-    if (!$image.data('cropper')) {
-      return;
-    }
+    addListener: function () {
+      this.$avatarView.on('click', $.proxy(this.click, this));
+      this.$avatarInput.on('change', $.proxy(this.change, this));
+      this.$avatarForm.on('submit', $.proxy(this.submit, this));
+      this.$avatarBtns.on('click', $.proxy(this.rotate, this));
+    },
 
-    if (type === 'checkbox') {
-      options[name] = $this.prop('checked');
-      cropBoxData = $image.cropper('getCropBoxData');
-      canvasData = $image.cropper('getCanvasData');
+    initTooltip: function () {
+      this.$avatarView.tooltip({
+        placement: 'bottom'
+      });
+    },
 
-      options.built = function () {
-        $image.cropper('setCropBoxData', cropBoxData);
-        $image.cropper('setCanvasData', canvasData);
-      };
-    } else if (type === 'radio') {
-      options[name] = $this.val();
-    }
+    initModal: function () {
+      this.$avatarModal.modal({
+        show: false
+      });
+    },
 
-    $image.cropper('destroy').cropper(options);
-  });
+    initPreview: function () {
+      var url = this.$avatar.attr('src');
 
+      this.$avatarPreview.html('<img src="' + url + '">');
+    },
 
-  // Methods
-  $('.docs-buttons').on('click', '[data-method]', function () {
-    var $this = $(this);
-    var data = $this.data();
-    var $target;
-    var result;
+    initIframe: function () {
+      var target = 'upload-iframe-' + (new Date()).getTime();
+      var $iframe = $('<iframe>').attr({
+            name: target,
+            src: ''
+          });
+      var _this = this;
 
-    if ($this.prop('disabled') || $this.hasClass('disabled')) {
-      return;
-    }
+      // Ready ifrmae
+      $iframe.one('load', function () {
 
-    if ($image.data('cropper') && data.method) {
-      data = $.extend({}, data); // Clone a new one
+        // respond response
+        $iframe.on('load', function () {
+          var data;
 
-      if (typeof data.target !== 'undefined') {
-        $target = $(data.target);
-
-        if (typeof data.option === 'undefined') {
           try {
-            data.option = JSON.parse($target.val());
+            data = $(this).contents().find('body').text();
           } catch (e) {
             console.log(e.message);
           }
-        }
-      }
 
-      if (data.method === 'rotate') {
-        $image.cropper('clear');
-      }
-
-      result = $image.cropper(data.method, data.option, data.secondOption);
-
-      if (data.method === 'rotate') {
-        $image.cropper('crop');
-      }
-
-      switch (data.method) {
-        case 'scaleX':
-        case 'scaleY':
-          $(this).data('option', -data.option);
-          break;
-
-        case 'getCroppedCanvas':
-          if (result) {
-
-            // Bootstrap's Modal
-            $('#getCroppedCanvasModal').modal().find('.modal-body').html(result);
-
-            if (!$download.hasClass('disabled')) {
-              $download.attr('href', result.toDataURL('image/jpeg'));
+          if (data) {
+            try {
+              data = $.parseJSON(data);
+            } catch (e) {
+              console.log(e.message);
             }
+
+            _this.submitDone(data);
+          } else {
+            _this.submitFail('Image upload failed!');
           }
 
-          break;
-      }
+          _this.submitEnd();
 
-      if ($.isPlainObject(result) && $target) {
-        try {
-          $target.val(JSON.stringify(result));
-        } catch (e) {
-          console.log(e.message);
-        }
-      }
+        });
+      });
 
-    }
-  });
+      this.$iframe = $iframe;
+      this.$avatarForm.attr('target', target).after($iframe.hide());
+    },
 
+    click: function () {
+      this.$avatarModal.modal('show');
+      this.initPreview();
+    },
 
-  // Keyboard
-  $(document.body).on('keydown', function (e) {
-
-    if (!$image.data('cropper') || this.scrollTop > 300) {
-      return;
-    }
-
-    switch (e.which) {
-      case 37:
-        e.preventDefault();
-        $image.cropper('move', -1, 0);
-        break;
-
-      case 38:
-        e.preventDefault();
-        $image.cropper('move', 0, -1);
-        break;
-
-      case 39:
-        e.preventDefault();
-        $image.cropper('move', 1, 0);
-        break;
-
-      case 40:
-        e.preventDefault();
-        $image.cropper('move', 0, 1);
-        break;
-    }
-
-  });
-
-
-  // Import image
-  var $inputImage = $('#inputImage');
-  var URL = window.URL || window.webkitURL;
-  var blobURL;
-
-  if (URL) {
-    $inputImage.change(function () {
-      var files = this.files;
+    change: function () {
+      var files;
       var file;
 
-      if (!$image.data('cropper')) {
-        return;
-      }
+      if (this.support.datauri) {
+        files = this.$avatarInput.prop('files');
 
-      if (files && files.length) {
-        file = files[0];
+        if (files.length > 0) {
+          file = files[0];
 
-        if (/^image\/\w+$/.test(file.type)) {
-          blobURL = URL.createObjectURL(file);
-          $image.one('built.cropper', function () {
+          if (this.isImageFile(file)) {
+            if (this.url) {
+              URL.revokeObjectURL(this.url); // Revoke the old one
+            }
 
-            // Revoke when load complete
-            URL.revokeObjectURL(blobURL);
-          }).cropper('reset').cropper('replace', blobURL);
-          $inputImage.val('');
-        } else {
-          window.alert('Please choose an image file.');
+            this.url = URL.createObjectURL(file);
+            this.startCropper();
+          }
+        }
+      } else {
+        file = this.$avatarInput.val();
+
+        if (this.isImageFile(file)) {
+          this.syncUpload();
         }
       }
-    });
-  } else {
-    $inputImage.prop('disabled', true).parent().addClass('disabled');
-  }
+    },
+
+    submit: function () {
+      if (!this.$avatarSrc.val() && !this.$avatarInput.val()) {
+        return false;
+      }
+
+      if (this.support.formData) {
+        this.ajaxUpload();
+        return false;
+      }
+    },
+
+    rotate: function (e) {
+      var data;
+
+      if (this.active) {
+        data = $(e.target).data();
+
+        if (data.method) {
+          this.$img.cropper(data.method, data.option);
+        }
+      }
+    },
+
+    isImageFile: function (file) {
+      if (file.type) {
+        return /^image\/\w+$/.test(file.type);
+      } else {
+        return /\.(jpg|jpeg|png|gif)$/.test(file);
+      }
+    },
+
+    startCropper: function () {
+      var _this = this;
+
+      if (this.active) {
+        this.$img.cropper('replace', this.url);
+      } else {
+        this.$img = $('<img src="' + this.url + '">');
+        this.$avatarWrapper.empty().html(this.$img);
+        this.$img.cropper({
+          aspectRatio: 1,
+          preview: this.$avatarPreview.selector,
+          crop: function (e) {
+            var json = [
+                  '{"x":' + e.x,
+                  '"y":' + e.y,
+                  '"height":' + e.height,
+                  '"width":' + e.width,
+                  '"rotate":' + e.rotate + '}'
+                ].join();
+
+            _this.$avatarData.val(json);
+          }
+        });
+
+        this.active = true;
+      }
+
+      this.$avatarModal.one('hidden.bs.modal', function () {
+        _this.$avatarPreview.empty();
+        _this.stopCropper();
+      });
+    },
+
+    stopCropper: function () {
+      if (this.active) {
+        this.$img.cropper('destroy');
+        this.$img.remove();
+        this.active = false;
+      }
+    },
+
+    ajaxUpload: function () {
+      var url = this.$avatarForm.attr('action');
+      var data = new FormData(this.$avatarForm[0]);
+      var _this = this;
+
+      $.ajax(url, {
+        type: 'post',
+        data: data,
+        dataType: 'json',
+        processData: false,
+        contentType: false,
+
+        beforeSend: function () {
+          _this.submitStart();
+        },
+
+        success: function (data) {
+          _this.submitDone(data);
+        },
+
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+          _this.submitFail(textStatus || errorThrown);
+        },
+
+        complete: function () {
+          _this.submitEnd();
+        }
+      });
+    },
+
+    syncUpload: function () {
+      this.$avatarSave.click();
+    },
+
+    submitStart: function () {
+      this.$loading.fadeIn();
+    },
+
+    submitDone: function (data) {
+      console.log(data);
+
+      if ($.isPlainObject(data) && data.state === 200) {
+        if (data.result) {
+          this.url = data.result;
+
+          if (this.support.datauri || this.uploaded) {
+            this.uploaded = false;
+            this.cropDone();
+          } else {
+            this.uploaded = true;
+            this.$avatarSrc.val(this.url);
+            this.startCropper();
+          }
+
+          this.$avatarInput.val('');
+        } else if (data.message) {
+          this.alert(data.message);
+        }
+      } else {
+        this.alert('Failed to response');
+      }
+    },
+
+    submitFail: function (msg) {
+      this.alert(msg);
+    },
+
+    submitEnd: function () {
+      this.$loading.fadeOut();
+    },
+
+    cropDone: function () {
+      this.$avatarForm.get(0).reset();
+      this.$avatar.attr('src', this.url);
+      this.stopCropper();
+      this.$avatarModal.modal('hide');
+    },
+
+    alert: function (msg) {
+      var $alert = [
+            '<div class="alert alert-danger avatar-alert alert-dismissable">',
+              '<button type="button" class="close" data-dismiss="alert">&times;</button>',
+              msg,
+            '</div>'
+          ].join('');
+
+      this.$avatarUpload.after($alert);
+    }
+  };
+
+  $(function () {
+    return new CropAvatar($('#crop-avatar'));
+  });
 
 });

@@ -3,6 +3,8 @@ package com.official.core.util;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.Assert;
 
 import com.alibaba.fastjson.JSON;
@@ -11,6 +13,8 @@ import com.official.foundation.domain.po.user.Account;
 
 /**
  * 用户登录
+ * 设计流程: 
+ * 用户登录信息存放在redis里面,主要存放 用户信息,用户权限
  * 
  * @author ShawnXII
  * @Version 1.0
@@ -18,6 +22,19 @@ import com.official.foundation.domain.po.user.Account;
 public class LoginUtils {
 
 	private static final String LOGIN_KEY = "login_voucher";
+	
+
+	private static StringRedisTemplate redisTemplate;
+	
+	
+	
+	public static StringRedisTemplate getRedisTemplate() {
+		return redisTemplate;
+	}
+	public static void setRedisTemplate(StringRedisTemplate arguments) {
+		System.out.println("setRedisTemplate init");
+		LoginUtils.redisTemplate = arguments;
+	}
 	/**
 	 * 登录
 	 * @param request
@@ -29,6 +46,7 @@ public class LoginUtils {
 		String json = JSON.toJSONString(lu);
 		SessionTool st = SessionTool.getInstance(request);		
 		st.set(LOGIN_KEY, json);
+	/*	redisTemplate.opsForList().leftPush("getpwdList","213");*/
 	}
 	/**
 	 * 获取登录用户
