@@ -29,6 +29,7 @@
 	</div>
 	<div class="content">
 		<form class="form-vertical login-form" action="toLogin.htm" id="loginForm" method="POST">
+			<input id="cookieEnabled" type="hidden" name="cookieEnabled"/>
 			<h3 class="form-title">登录</h3>
 			<div class="alert alert-error ${isEmpty(errorMsg)?'hide':''}">
 				<button class="close" data-dismiss="alert"></button>
@@ -104,7 +105,8 @@
 	<script src="${config.resourcePath!}/js/login-soft.js" type="text/javascript"></script>      
 	<!-- END PAGE LEVEL SCRIPTS --> 
 	<script>
-		jQuery(document).ready(function() {     
+		jQuery(document).ready(function() {
+			$('#cookieEnabled').val(navigator.cookieEnabled);
 		  App.init();
 		  Login.init();
 		  $.backstretch([

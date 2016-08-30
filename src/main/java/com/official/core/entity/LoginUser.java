@@ -1,5 +1,7 @@
 package com.official.core.entity;
 
+import java.util.Date;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
@@ -32,6 +34,10 @@ public class LoginUser implements java.io.Serializable {
 
 	private boolean imageFlag;
 	
+	private Date loginDate;
+	
+	private String ip;
+	
 	public LoginUser() {
 		super();
 	}
@@ -39,6 +45,10 @@ public class LoginUser implements java.io.Serializable {
 	public LoginUser(Account account) {
 		this();
 		Assert.notNull(account);
+		if(account.getState().intValue()!=100){
+			this.loginDate=new Date();
+			this.ip=account.getRemarks();
+		}
 		this.id=account.getId();
 		this.username = account.getUsername();
 		String nickName = account.getNickname();
@@ -62,6 +72,7 @@ public class LoginUser implements java.io.Serializable {
 		this.nickName=nickName;
 		this.image=image;
 		this.hideName=Commutil.hidename(nickName);
+		
 	}
 
 	public String getUsername() {
@@ -116,6 +127,22 @@ public class LoginUser implements java.io.Serializable {
 	public String toString() {
 		return "LoginUser [username=" + username + ", id=" + id + ", nickName=" + nickName + ", image=" + image
 				+ ", hideName=" + hideName + ", imageFlag=" + imageFlag + "]";
+	}
+
+	public Date getLoginDate() {
+		return loginDate;
+	}
+
+	public void setLoginDate(Date loginDate) {
+		this.loginDate = loginDate;
+	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
 	}
 
 }

@@ -18,12 +18,12 @@ public class UnknownInterceptor implements HandlerInterceptor{
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
-		LoginUser lu=LoginUtils.getCurrentuser(request);
+		/*LoginUser lu=LoginUtils.getCurrentuser(request);
 		if(lu!=null){
 			String contextPath=request.getContextPath();
 			response.sendRedirect(contextPath+"/admin/index.htm");
 			return false;
-		}
+		}*/
 		return true;
 	}
 

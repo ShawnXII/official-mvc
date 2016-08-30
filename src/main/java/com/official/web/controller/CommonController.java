@@ -37,7 +37,9 @@ public class CommonController extends BaseController {
 	 */
 	@RequestMapping(value = "/uploadFile.htm", method = RequestMethod.POST)
 	public Map<String, Object> uploadFile(HttpServletRequest request,
-			@RequestParam(value = "photo", required = false) MultipartFile multipartFile) {
+			@RequestParam(value = "avatar_file", required = false) MultipartFile multipartFile) {
+		String avatar_data=request.getParameter("avatar_data");
+		String avatar_src=request.getParameter("avatar_src");
 		 Map<String, Object> map=Maps.newHashMap();
 		 map.put("flag",false);
 		if (multipartFile != null && !multipartFile.isEmpty()) {

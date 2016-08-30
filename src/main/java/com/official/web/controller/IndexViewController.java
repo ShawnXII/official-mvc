@@ -1,6 +1,7 @@
 package com.official.web.controller;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +58,7 @@ public class IndexViewController extends BaseController {
 	 * @return
 	 */
 	@RequestMapping(value = "/updateAccount.htm", method = RequestMethod.POST)
-	public String updateAccount(HttpServletRequest request, RedirectAttributes attr) {
+	public String updateAccount(HttpServletResponse response,HttpServletRequest request, RedirectAttributes attr) {
 		LoginUser lu = LoginUtils.getCurrentuser(request);
 		Account account = accountService.findOne(lu.getId());
 		String nickname = Commutil.null2String(request.getParameter("nickname"));
@@ -95,7 +96,7 @@ public class IndexViewController extends BaseController {
 			}
 		}
 		attr.addFlashAttribute("msg", "修改成功");
-		LoginUtils.login(request, this.accountService.updateAccount(account));
+		LoginUtils.login(request,response, this.accountService.updateAccount(account));
 		return "redirect:/admin/index.htm";
 	}
 	/**
@@ -103,14 +104,14 @@ public class IndexViewController extends BaseController {
 	 * @return
 	 */
 	@RequestMapping(value = "/updateAccountImage.htm", method = RequestMethod.POST)
-	public String updateImage(HttpServletRequest request,@RequestParam("file") MultipartFile multipartFile,RedirectAttributes attr){
+	public String updateImage(HttpServletResponse response,HttpServletRequest request,@RequestParam("file") MultipartFile multipartFile,RedirectAttributes attr){
 		LoginUser lu = LoginUtils.getCurrentuser(request);
 		String path=UpLoadFile.upload(multipartFile,request);
 		if(StringUtils.isNotBlank(path)){
 			Account account = accountService.findOne(lu.getId());
 			account.setImage(path);
 			attr.addFlashAttribute("msg", "修改成功");
-			LoginUtils.login(request, this.accountService.updateAccount(account));
+			LoginUtils.login(request, response,this.accountService.updateAccount(account));
 			return "redirect:/admin/index.htm";
 		}	
 		attr.addFlashAttribute("msg", "修改图片失败");

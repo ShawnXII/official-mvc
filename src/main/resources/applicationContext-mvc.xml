@@ -160,21 +160,38 @@
 
 	<!-- redis -->
 	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
-		
+		<!-- <property name="maxActive" value="300" /> -->
+		<!-- <property name="maxIdle" value="100" /> <property name="maxWait" value="10000" 
+			/> <property name="testOnBorrow" value="true" /> -->
+		<property name="maxIdle" value="${redis.maxIdle}" />
+		<property name="timeBetweenEvictionRunsMillis" value="${redis.timeBetweenEvictionRunsMillis}" />
+		<property name="minEvictableIdleTimeMillis" value="${redis.minEvictableIdleTimeMillis}" />
+		<property name="testOnBorrow" value="${redis.testOnBorrow}" />
+		<property name="maxTotal" value="${redis.maxTotal}" />
 	</bean>
+	
 	<bean id="connectionFactory"
 		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
 		p:host-name="${redis.host}" p:port="${redis.port}" p:password="${redis.pass}"
 		p:pool-config-ref="poolConfig" />
 
-	<bean id="redisTemplate" class="org.springframework.data.redis.core.StringRedisTemplate">
+	<bean id="redisStringTemplate" class="org.springframework.data.redis.core.StringRedisTemplate">
 		<property name="connectionFactory" ref="connectionFactory" />
 	</bean>
 	
-	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
+		p:connection-factory-ref="connectionFactory">
+		<property name="KeySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+	</bean>
+
+	<bean
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="staticMethod"
-                  value="com.official.core.util.LoginUtils.setRedisTemplate"/>
-        <property name="arguments" ref="redisTemplate"/>
+			value="com.official.core.util.LoginUtils.setRedisTemplate" />
+		<property name="arguments" ref="redisStringTemplate" />
 	</bean>
 	<import resource="dubbo.xml" />
 </beans>

@@ -16,24 +16,52 @@
   var console = window.console || { log: function () {} };
   
   function CropAvatar($element) {
-    this.$container = $element;
+	  this.$container = $element;
+	  this.$avatar =this.$avatarView.find('img');
+	  
+	  
+   /* this.$avatarView = this.$container.find('.avatar-view');*/
     
-    this.$avatarView = this.$container.find('.avatar-view');
-    this.$avatar = this.$avatarView.find('img');
-    this.$avatarModal = this.$container.find('#avatar-modal');
-    this.$loading = this.$container.find('.loading');
-
-    this.$avatarForm = this.$avatarModal.find('.avatar-form');
-    this.$avatarUpload = this.$avatarForm.find('.avatar-upload');
-    this.$avatarSrc = this.$avatarForm.find('.avatar-src');
-    this.$avatarData = this.$avatarForm.find('.avatar-data');
-    this.$avatarInput = this.$avatarForm.find('.avatar-input');
-    this.$avatarSave = this.$avatarForm.find('.avatar-save');
-    this.$avatarBtns = this.$avatarForm.find('.avatar-btns');
-
-    this.$avatarWrapper = this.$avatarModal.find('.avatar-wrapper');
-    this.$avatarPreview = this.$avatarModal.find('.avatar-preview');
-    
+    //this.$avatar = this.$avatarView.find('img');
+    var title='图片编辑';
+	var url='/official-admin/common/uploadFile.htm';
+	this.$avatarModal=$('<div class="modal fade" aria-hidden="true" aria-labelledby="avatar-modal-label" role="dialog" tabindex="-1"></div>').css('width',900)
+	.css('height',571).css('box-shadow','0 5px 15px rgba(0,0,0,.5)').css('border-radius','6px');
+	var lg=$('<div class="modal-dialog modal-lg "></div>').appendTo(this.$avatarModal).css('width',900).css('height',571);
+	var content=$('<div class="modal-content"></div>').appendTo(lg);
+	this.$avatarForm=$('<form class="avatar-form" action="'+url+'" enctype="multipart/form-data" method="post"></form>').appendTo(content);
+	$('<div class="modal-header"><button type="button" class="close" data-dismiss="modal"></button><h4 class="modal-title">'+title+'</h4></div>').appendTo(this.$avatarForm);	
+	var body1=$('<div class="modal-body"></div>').appendTo(this.$avatarForm).css('max-height','552px');
+	var body=$('<div class="avatar-body"></div>').appendTo(body1);
+	this.$avatarUpload=$('<div class="avatar-upload"></div>').appendTo(body);
+	this.$avatarSrc =$('<input type="hidden" class="avatar-src" name="avatar_src" />').appendTo(this.$avatarUpload);
+	this.$avatarData = $(' <input type="hidden" class="avatar-data" name="avatar_data" />').appendTo(this.$avatarUpload);
+	$('<label for="avatarInput">本地上传</label>').appendTo(this.$avatarUpload)
+	this.$avatarInput =$('<input type="file" class="avatar-input" id="avatarInput" name="avatar_file">').appendTo(this.$avatarUpload);
+	var row=$('<div class="row-fluid"></div>').appendTo(body);
+	var row1=$('<div class="span9"></div>').appendTo(row);
+	this.$avatarWrapper = $('<div class="avatar-wrapper"></div>').appendTo(row1);
+	var row2 =$('<div class="span3"></div>').appendTo(row);
+	$('<div class="avatar-preview preview-lg"></div>').appendTo(row2);
+	/* $('<div class="avatar-preview preview-md"></div>').appendTo(row1); */
+	$('<div class="avatar-preview preview-sm"></div>').appendTo(row2);
+	
+	this.$avatarBtns =$('<div class="row-fluid avatar-btns"></div>').appendTo(body);
+	var btns=$('<div class="span12"></div>').appendTo(this.$avatarBtns);
+	var btn_group=$('<div class="btn-group span4"></div>').appendTo(btns);
+	$('<button type="button" class="btn blue" data-method="rotate" data-option="-90" title="左旋90°">左旋90°</button>').appendTo(btn_group);
+	$('<button type="button" class="btn blue" data-method="rotate" data-option="-15">-15deg</button>').appendTo(btn_group);
+	$('<button type="button" class="btn blue" data-method="rotate" data-option="-30">-30deg</button>').appendTo(btn_group);
+	$('<button type="button" class="btn blue" data-method="rotate" data-option="-45">-45deg</button>').appendTo(btn_group);
+	var btn_group1=$('<div class="btn-group span4"></div>').appendTo(btns);
+	$('<button type="button" class="btn blue" data-method="rotate" data-option="90" title="右旋90°">右旋90°</button>').appendTo(btn_group1);
+	$('<button type="button" class="btn blue" data-method="rotate" data-option="15">15deg</button>').appendTo(btn_group1);
+	$('<button type="button" class="btn blue" data-method="rotate" data-option="30">30deg</button>').appendTo(btn_group1);
+	$('<button type="button" class="btn blue" data-method="rotate" data-option="45">45deg</button>').appendTo(btn_group1);
+	var sub_div=$('<div class="span3"></div>').appendTo(btns);
+	this.$avatarSave = $('<button type="submit" class="btn blue">完成</button>').appendTo(sub_div);
+	this.$avatarPreview =row2.find('.avatar-preview');
+	this.$avatarModal.modal('show');
     this.init();
   }
 
@@ -59,16 +87,16 @@
     },
 
     addListener: function () {
-      this.$avatarView.on('click', $.proxy(this.click, this));
+     /* this.$avatarView.on('click', $.proxy(this.click, this));*/
       this.$avatarInput.on('change', $.proxy(this.change, this));
       this.$avatarForm.on('submit', $.proxy(this.submit, this));
       this.$avatarBtns.on('click', $.proxy(this.rotate, this));
     },
 
     initTooltip: function () {
-      this.$avatarView.tooltip({
+      /*this.$avatarView.tooltip({
         placement: 'bottom'
-      });
+      });*/
     },
 
     initModal: function () {
@@ -198,8 +226,13 @@
         this.$img = $('<img src="' + this.url + '">');
         this.$avatarWrapper.empty().html(this.$img);
         this.$img.cropper({
-          aspectRatio: 1,
+          aspectRatio: 16/9,
           preview: this.$avatarPreview.selector,
+          zoomable:false,
+          minCanvasWidth:200,
+          minCanvasHeight:100,
+          strict:true,
+          dragCrop:false,
           crop: function (e) {
             var json = [
                   '{"x":' + e.x,
@@ -232,9 +265,9 @@
 
     ajaxUpload: function () {
       var url = this.$avatarForm.attr('action');
-      var data = new FormData(this.$avatarForm[0]);
+      var data = this.$avatarForm.serialize();
       var _this = this;
-
+      console.log(data);
       $.ajax(url, {
         type: 'post',
         data: data,
@@ -269,8 +302,7 @@
     },
 
     submitDone: function (data) {
-      console.log(data);
-
+    	console.log(data);
       if ($.isPlainObject(data) && data.state === 200) {
         if (data.result) {
           this.url = data.result;
@@ -315,13 +347,13 @@
               msg,
             '</div>'
           ].join('');
-
+      
       this.$avatarUpload.after($alert);
     }
   };
 
   $(function () {
-    return new CropAvatar($('#crop-avatar'));
+    return new CropAvatar();
   });
 
 });
